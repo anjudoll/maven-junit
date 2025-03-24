@@ -14,10 +14,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <!-- This configures the compiler to produce Java 8 class files. -->
-    <!-- The minimum JDK version installed is 8 of course, but newer JDK releases should work too. -->
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
+    <!-- Updated Java version to 17 to match the GitHub Actions setup -->
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
 
     <junit.jupiter.version>5.2.0</junit.jupiter.version>
     <junit.platform.version>1.2.0</junit.platform.version>
@@ -27,7 +26,7 @@
   </properties>
 
   <dependencies>
-    <!-- Testing dependencies. -->
+    <!-- JUnit dependencies -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -46,6 +45,8 @@
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Hamcrest & Mockito for better testing -->
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
@@ -62,7 +63,7 @@
     <plugins>
 
       <plugin>
-        <!-- Configures the compiler. -->
+        <!-- Java Compiler Plugin -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
@@ -74,17 +75,19 @@
       </plugin>
 
       <plugin>
-        <!-- Unit tests are run by surefire. -->
-        <!-- Classes under src/test/java called *Test are included automatically. -->
-        <!-- Unit tests are run during the test phase. -->
+        <!-- Surefire Plugin for Unit Tests -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.0</version>
+        <configuration>
+          <argLine>-Xmx1024m</argLine> <!-- Increased memory allocation -->
+          <forkCount>2</forkCount> <!-- Run tests in parallel -->
+          <reuseForks>true</reuseForks>
+        </configuration>
       </plugin>
+
       <plugin>
-        <!-- Integration tests are run by failsafe. -->
-        <!-- Classes under src/test/java called *IT are included automatically. -->
-        <!-- Integration tests are run during the verify phase. -->
+        <!-- Failsafe Plugin for Integration Tests -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.22.0</version>
@@ -99,10 +102,7 @@
       </plugin>
 
       <plugin>
-        <!-- Code coverage plugin. -->
-        <!-- This sets up code coverage for the unit tests, the integration tests, -->
-        <!-- and the combined coverage of both. -->
-        <!-- After running a `mvn clean install`, open `target/site/jacoco-both/index.html` in a browser. -->
+        <!-- Jacoco Plugin for Code Coverage -->
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.plugin.version}</version>
@@ -111,12 +111,6 @@
             <id>jacoco-prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>jacoco-prepare-agent-integration</id>
-            <goals>
-              <goal>prepare-agent-integration</goal>
             </goals>
           </execution>
           <execution>
@@ -132,41 +126,6 @@
             </goals>
             <configuration>
               <rules />
-            </configuration>
-          </execution>
-          <execution>
-            <!-- Combine the code coverage statistics generated for the unit and the integration tests. -->
-            <id>jacoco-merge</id>
-            <goals>
-              <goal>merge</goal>
-            </goals>
-            <phase>verify</phase>
-            <configuration>
-              <fileSets>
-                <fileSet>
-                  <directory>${project.build.directory}</directory>
-                  <includes>
-                    <include>*.exec</include>
-                  </includes>
-                </fileSet>
-              </fileSets>
-              <destFile>${project.build.directory}/jacoco-both.exec</destFile>
-            </configuration>
-          </execution>
-          <execution>
-            <id>jacoco-integration</id>
-            <goals>
-              <goal>report-integration</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>jacoco-reportboth</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-            <configuration>
-              <dataFile>${project.build.directory}/jacoco-both.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-both</outputDirectory>
             </configuration>
           </execution>
         </executions>
